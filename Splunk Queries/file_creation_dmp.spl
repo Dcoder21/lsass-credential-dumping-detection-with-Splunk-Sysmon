@@ -1,0 +1,13 @@
+index=sysmon EventID=11
+| eval dmp_ext=lower(substr(TargetFilename, -4))
+| where dmp_ext=".dmp"
+| search TargetFilename="*lsass*" OR CommandLine="*lsass*" OR Image="*procdump.exe" OR Image="*rundll32.exe"
+| eval SuspiciousDump=case(
+    like(TargetFilename, "%\\lsass%.dmp"), "LSASS-named dump",
+    like(CommandLine, "%lsass%"), "Dump cmdline mentions LSASS",
+    like(Image, "%procdump.exe"), "Procdump used",
+    like(Image, "%rundll32.exe"), "Rundll32 dump"
+)
+| search NOT (Image LIKE "%program files%" OR Image="C:\\Windows\\System32\\taskmgr.exe")
+| table _time, HostName, User, Image, CommandLine, TargetFilename, SuspiciousDump
+| sort -_time
