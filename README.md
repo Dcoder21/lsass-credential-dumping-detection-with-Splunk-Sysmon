@@ -1,0 +1,1 @@
+# lsass-credential-dumping-detection-with-Splunk-Sysmon
